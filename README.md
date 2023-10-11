@@ -79,6 +79,18 @@ Required to calculate the alignment of the trajectory with the ground truth. **R
 
 We provide some examples to process input of a monocular, monocular-inertial, stereo, stereo-inertial or RGB-D camera using ROS. Building these examples is optional. These have been tested with ROS Melodic under Ubuntu 18.04.
 
+## ROS on UBUNTU 23.10
+The strategy used to compile on Ubuntu 23.10 is to use `multipass` to create a virtual machine that has ROS noetic already setup. Following some steps to create the environment needed.
+
+sudo snap install multipass 
+multipass launch ros-noetic --name noetic-vm
+multipass set local.noetic-vm.memory=16G
+multipass shell noetic-vm
+in the vm shell set path as 
+export ROS_PACKAGE_PATH=/opt/ros/noetic/share:/home/ubuntu/sw_develop/ORB_SLAM3/Examples/ROS/ORB_SLAM3
+
+Refer to the guide at https://ubuntu.com//blog/ros-development-on-linux-windows-and-macos for other useful commands for multipass
+
 # 3. Building ORB-SLAM3 library and examples
 
 Clone the repository:
