@@ -51,7 +51,7 @@ If you use ORB-SLAM3 in an academic work, please cite:
      }
 
 # 2. Prerequisites
-We have tested the library in **Ubuntu 16.04** and **18.04**, but it should be easy to compile in other platforms. A powerful computer (e.g. i7) will ensure real-time performance and provide more stable and accurate results.
+We have tested the library in **Ubuntu 20.04.6** and **23.10**, but it should be easy to compile in other platforms. A powerful computer (e.g. i7) will ensure real-time performance and provide more stable and accurate results.
 
 ## C++14 or C++11 Compiler
 We use the new thread and chrono functionalities of C++11.
@@ -81,14 +81,14 @@ We provide some examples to process input of a monocular, monocular-inertial, st
 
 ## ROS on UBUNTU 23.10
 The strategy used to compile on Ubuntu 23.10 is to use `multipass` to create a virtual machine that has ROS noetic already setup. Following some steps to create the environment needed.
-
+```
 sudo snap install multipass 
 multipass launch ros-noetic --name noetic-vm
 multipass set local.noetic-vm.memory=16G
 multipass shell noetic-vm
-in the vm shell set path as 
+# in the vm shell set path as 
 export ROS_PACKAGE_PATH=/opt/ros/noetic/share:/home/ubuntu/sw_develop/ORB_SLAM3/Examples/ROS/ORB_SLAM3
-
+```
 Refer to the guide at https://ubuntu.com//blog/ros-development-on-linux-windows-and-macos for other useful commands for multipass
 
 # 3. Building ORB-SLAM3 library and examples
