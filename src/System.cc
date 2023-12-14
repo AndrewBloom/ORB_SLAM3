@@ -21,7 +21,6 @@
 #include "System.h"
 #include "Converter.h"
 #include <thread>
-#include <pangolin/pangolin.h>
 #include <iomanip>
 #include <openssl/md5.h>
 #include <boost/serialization/base_object.hpp>
@@ -40,7 +39,7 @@ Verbose::eLevel Verbose::th = Verbose::VERBOSITY_NORMAL;
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer, const int initFr, const string &strSequence):
-    mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false), mbResetActiveMap(false),
+    mSensor(sensor), mbReset(false), mbResetActiveMap(false),
     mbActivateLocalizationMode(false), mbDeactivateLocalizationMode(false), mbShutDown(false)
 {
     // Output welcome message
@@ -109,23 +108,27 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     bool loadedAtlas = false;
 
+    auto loadOrbVocabulary = [&]() {
+            //Load ORB Vocabulary
+            cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
+
+            mpVocabulary = new ORBVocabulary();
+            bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+            if(!bVocLoad)
+            {
+                cerr << "Wrong path to vocabulary. " << endl;
+                cerr << "Falied to open at: " << strVocFile << endl;
+                exit(-1);
+            }
+            cout << "Vocabulary loaded!" << endl << endl;
+
+            //Create KeyFrame Database
+            mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
+    };
+
     if(mStrLoadAtlasFromFile.empty())
     {
-        //Load ORB Vocabulary
-        cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
-
-        mpVocabulary = new ORBVocabulary();
-        bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
-        if(!bVocLoad)
-        {
-            cerr << "Wrong path to vocabulary. " << endl;
-            cerr << "Falied to open at: " << strVocFile << endl;
-            exit(-1);
-        }
-        cout << "Vocabulary loaded!" << endl << endl;
-
-        //Create KeyFrame Database
-        mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
+        loadOrbVocabulary();
 
         //Create the Atlas
         cout << "Initialization of Atlas from scratch " << endl;
@@ -133,21 +136,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
     else
     {
-        //Load ORB Vocabulary
-        cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
-
-        mpVocabulary = new ORBVocabulary();
-        bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
-        if(!bVocLoad)
-        {
-            cerr << "Wrong path to vocabulary. " << endl;
-            cerr << "Falied to open at: " << strVocFile << endl;
-            exit(-1);
-        }
-        cout << "Vocabulary loaded!" << endl << endl;
-
-        //Create KeyFrame Database
-        mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
+        loadOrbVocabulary();
 
         cout << "Load File" << endl;
 
@@ -177,18 +166,14 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         //usleep(10*1000*1000);
     }
 
-
     if (mSensor==IMU_STEREO || mSensor==IMU_MONOCULAR || mSensor==IMU_RGBD)
         mpAtlas->SetInertialSensor();
 
-    //Create Drawers. These are used by the Viewer
-    mpFrameDrawer = new FrameDrawer(mpAtlas);
-    mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile, settings_);
-
+    sysUI = new SystemUI(mpAtlas, strSettingsFile, settings_);
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     cout << "Seq. Name: " << strSequence << endl;
-    mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
+    mpTracker = new Tracking(this, mpVocabulary, sysUI->getFrameDrawer(), sysUI->getMapDrawer(),
                              mpAtlas, mpKeyFrameDatabase, strSettingsFile, mSensor, settings_, strSequence);
 
     //Initialize the Local Mapping thread and launch
@@ -229,11 +214,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     if(bUseViewer)
     //if(false) // TODO
     {
-        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile,settings_);
-        mptViewer = new thread(&Viewer::Run, mpViewer);
-        mpTracker->SetViewer(mpViewer);
-        mpLoopCloser->mpViewer = mpViewer;
-        mpViewer->both = mpFrameDrawer->both;
+        sysUI->startUIThread(mpTracker, strSettingsFile, settings_);
     }
 
     // Fix verbosity

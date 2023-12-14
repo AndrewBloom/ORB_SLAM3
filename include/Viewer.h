@@ -27,6 +27,7 @@
 #include "Settings.h"
 
 #include <mutex>
+#include "IViewer.h"
 
 namespace ORB_SLAM3
 {
@@ -37,7 +38,7 @@ class MapDrawer;
 class System;
 class Settings;
 
-class Viewer
+class Viewer : public IViewer
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

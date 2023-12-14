@@ -91,3 +91,9 @@ my_settings.txt
 borrar/*
 
 */ExecMean.txt
+
+.DS_Store
+
+CMakeCache.txt
+CMakeFiles/
+

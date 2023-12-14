@@ -17,7 +17,6 @@
 */
 
 #include "Atlas.h"
-#include "Viewer.h"
 
 #include "GeometricCamera.h"
 #include "Pinhole.h"

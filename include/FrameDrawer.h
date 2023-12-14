@@ -20,6 +20,7 @@
 #ifndef FRAMEDRAWER_H
 #define FRAMEDRAWER_H
 
+#include "IFrameDrawer.h"
 #include "Tracking.h"
 #include "MapPoint.h"
 #include "Atlas.h"
@@ -37,7 +38,7 @@ namespace ORB_SLAM3
 class Tracking;
 class Viewer;
 
-class FrameDrawer
+class FrameDrawer : public IFrameDrawer
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

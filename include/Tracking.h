@@ -23,8 +23,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include "Viewer.h"
-#include "FrameDrawer.h"
+#include "IViewer.h"
+#include "IFrameDrawer.h"
+#include "IMapDrawer.h"
 #include "Atlas.h"
 #include "LocalMapping.h"
 #include "LoopClosing.h"
@@ -32,7 +33,6 @@
 #include "ORBVocabulary.h"
 #include "KeyFrameDatabase.h"
 #include "ORBextractor.h"
-#include "MapDrawer.h"
 #include "System.h"
 #include "ImuTypes.h"
 #include "Settings.h"
@@ -45,8 +45,8 @@
 namespace ORB_SLAM3
 {
 
-class Viewer;
-class FrameDrawer;
+class IViewer;
+class IFrameDrawer;
 class Atlas;
 class LocalMapping;
 class LoopClosing;
@@ -58,7 +58,7 @@ class Tracking
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
+    Tracking(System* pSys, ORBVocabulary* pVoc, IFrameDrawer* pFrameDrawer, IMapDrawer* pMapDrawer, Atlas* pAtlas,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string());
 
     ~Tracking();
@@ -77,7 +77,7 @@ public:
 
     void SetLocalMapper(LocalMapping* pLocalMapper);
     void SetLoopClosing(LoopClosing* pLoopClosing);
-    void SetViewer(Viewer* pViewer);
+    void SetViewer(IViewer* pViewer);
     void SetStepByStep(bool bSet);
     bool GetStepByStep();
 
@@ -278,9 +278,9 @@ protected:
     System* mpSystem;
     
     //Drawers
-    Viewer* mpViewer;
-    FrameDrawer* mpFrameDrawer;
-    MapDrawer* mpMapDrawer;
+    IViewer* mpViewer;
+    IFrameDrawer* mpFrameDrawer;
+    IMapDrawer* mpMapDrawer;
     bool bStepByStep;
 
     //Atlas

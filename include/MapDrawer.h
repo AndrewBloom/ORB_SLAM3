@@ -20,6 +20,7 @@
 #ifndef MAPDRAWER_H
 #define MAPDRAWER_H
 
+#include "IMapDrawer.h"
 #include"Atlas.h"
 #include"MapPoint.h"
 #include"KeyFrame.h"
@@ -33,7 +34,7 @@ namespace ORB_SLAM3
 
 class Settings;
 
-class MapDrawer
+class MapDrawer : public IMapDrawer
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
