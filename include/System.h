@@ -28,6 +28,7 @@
 #include<thread>
 #include<opencv2/core/core.hpp>
 
+#include "OrbSlam3.h"
 #include "SystemUI.h"
 #include "Tracking.h"
 #include "Atlas.h"
@@ -83,16 +84,6 @@ class Settings;
 class System
 {
 public:
-    // Input sensor
-    enum eSensor{
-        MONOCULAR=0,
-        STEREO=1,
-        RGBD=2,
-        IMU_MONOCULAR=3,
-        IMU_STEREO=4,
-        IMU_RGBD=5,
-    };
-
     // File type
     enum FileType{
         TEXT_FILE=0,
@@ -102,8 +93,7 @@ public:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true, const int initFr = 0, const string &strSequence = std::string());
-    ~System();
+    System(const string &strVocFile, const string &strSettingsFile, const OrbSlam3::eSensor sensor, const bool bUseViewer = true, const int initFr = 0, const string &strSequence = std::string());
 
     // Proccess the given stereo frame. Images must be synchronized and rectified.
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
@@ -201,7 +191,7 @@ private:
     string CalculateCheckSum(string filename, int type);
 
     // Input sensor
-    eSensor mSensor;
+    OrbSlam3::eSensor mSensor;
 
     // ORB vocabulary used for place recognition and feature matching.
     ORBVocabulary* mpVocabulary;

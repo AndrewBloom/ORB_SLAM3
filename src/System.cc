@@ -37,7 +37,7 @@ namespace ORB_SLAM3
 
 Verbose::eLevel Verbose::th = Verbose::VERBOSITY_NORMAL;
 
-System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
+System::System(const string &strVocFile, const string &strSettingsFile, const OrbSlam3::eSensor sensor,
                const bool bUseViewer, const int initFr, const string &strSequence):
     mSensor(sensor), mbReset(false), mbResetActiveMap(false),
     mbActivateLocalizationMode(false), mbDeactivateLocalizationMode(false), mbShutDown(false)
@@ -52,17 +52,17 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     cout << "Input sensor was set to: ";
 
-    if(mSensor==MONOCULAR)
+    if(mSensor==OrbSlam3::MONOCULAR)
         cout << "Monocular" << endl;
-    else if(mSensor==STEREO)
+    else if(mSensor==OrbSlam3::STEREO)
         cout << "Stereo" << endl;
-    else if(mSensor==RGBD)
+    else if(mSensor==OrbSlam3::RGBD)
         cout << "RGB-D" << endl;
-    else if(mSensor==IMU_MONOCULAR)
+    else if(mSensor==OrbSlam3::IMU_MONOCULAR)
         cout << "Monocular-Inertial" << endl;
-    else if(mSensor==IMU_STEREO)
+    else if(mSensor==OrbSlam3::IMU_STEREO)
         cout << "Stereo-Inertial" << endl;
-    else if(mSensor==IMU_RGBD)
+    else if(mSensor==OrbSlam3::IMU_RGBD)
         cout << "RGB-D-Inertial" << endl;
 
     //Check settings file
@@ -166,7 +166,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         //usleep(10*1000*1000);
     }
 
-    if (mSensor==IMU_STEREO || mSensor==IMU_MONOCULAR || mSensor==IMU_RGBD)
+    if (mSensor==OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_MONOCULAR || mSensor==OrbSlam3::IMU_RGBD)
         mpAtlas->SetInertialSensor();
 
     sysUI = new SystemUI(mpAtlas, strSettingsFile, settings_);
@@ -177,8 +177,8 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
                              mpAtlas, mpKeyFrameDatabase, strSettingsFile, mSensor, settings_, strSequence);
 
     //Initialize the Local Mapping thread and launch
-    mpLocalMapper = new LocalMapping(this, mpAtlas, mSensor==MONOCULAR || mSensor==IMU_MONOCULAR,
-                                     mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD, strSequence);
+    mpLocalMapper = new LocalMapping(this, mpAtlas, mSensor==OrbSlam3::MONOCULAR || mSensor==OrbSlam3::IMU_MONOCULAR,
+                                     mSensor==OrbSlam3::IMU_MONOCULAR || mSensor==OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD, strSequence);
     mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run,mpLocalMapper);
     mpLocalMapper->mInitFr = initFr;
     if(settings_)
@@ -195,7 +195,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     //Initialize the Loop Closing thread and launch
     // mSensor!=MONOCULAR && mSensor!=IMU_MONOCULAR
-    mpLoopCloser = new LoopClosing(mpAtlas, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR, activeLC); // mSensor!=MONOCULAR);
+    mpLoopCloser = new LoopClosing(mpAtlas, mpKeyFrameDatabase, mpVocabulary, mSensor!=OrbSlam3::MONOCULAR, activeLC); // mSensor!=MONOCULAR);
     mptLoopClosing = new thread(&ORB_SLAM3::LoopClosing::Run, mpLoopCloser);
 
     //Set pointers between threads
@@ -224,7 +224,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
 Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp, const vector<IMU::Point>& vImuMeas, string filename)
 {
-    if(mSensor!=STEREO && mSensor!=IMU_STEREO)
+    if(mSensor!=OrbSlam3::STEREO && mSensor!=OrbSlam3::IMU_STEREO)
     {
         cerr << "ERROR: you called TrackStereo but input sensor was not set to Stereo nor Stereo-Inertial." << endl;
         exit(-1);
@@ -289,7 +289,7 @@ Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, 
         }
     }
 
-    if (mSensor == System::IMU_STEREO)
+    if (mSensor == OrbSlam3::IMU_STEREO)
         for(size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
@@ -308,7 +308,7 @@ Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, 
 
 Sophus::SE3f System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const double &timestamp, const vector<IMU::Point>& vImuMeas, string filename)
 {
-    if(mSensor!=RGBD  && mSensor!=IMU_RGBD)
+    if(mSensor!=OrbSlam3::RGBD  && mSensor!=OrbSlam3::IMU_RGBD)
     {
         cerr << "ERROR: you called TrackRGBD but input sensor was not set to RGBD." << endl;
         exit(-1);
@@ -364,7 +364,7 @@ Sophus::SE3f System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const
         }
     }
 
-    if (mSensor == System::IMU_RGBD)
+    if (mSensor == OrbSlam3::IMU_RGBD)
         for(size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
@@ -386,7 +386,7 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
             return Sophus::SE3f();
     }
 
-    if(mSensor!=MONOCULAR && mSensor!=IMU_MONOCULAR)
+    if(mSensor!=OrbSlam3::MONOCULAR && mSensor!=OrbSlam3::IMU_MONOCULAR)
     {
         cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular nor Monocular-Inertial." << endl;
         exit(-1);
@@ -440,7 +440,7 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
         }
     }
 
-    if (mSensor == System::IMU_MONOCULAR)
+    if (mSensor == OrbSlam3::IMU_MONOCULAR)
         for(size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
@@ -550,7 +550,7 @@ bool System::isShutDown() {
 void System::SaveTrajectoryTUM(const string &filename)
 {
     cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
-    if(mSensor==MONOCULAR)
+    if(mSensor==OrbSlam3::MONOCULAR)
     {
         cerr << "ERROR: SaveTrajectoryTUM cannot be used for monocular." << endl;
         return;
@@ -670,7 +670,7 @@ void System::SaveTrajectoryEuRoC(const string &filename)
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
     Sophus::SE3f Twb; // Can be word to cam0 or world to b depending on IMU or not.
-    if (mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD)
+    if (mSensor==OrbSlam3::IMU_MONOCULAR || mSensor==OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         Twb = vpKFs[0]->GetImuPose();
     else
         Twb = vpKFs[0]->GetPoseInverse();
@@ -735,7 +735,7 @@ void System::SaveTrajectoryEuRoC(const string &filename)
 
         // cout << "4" << endl;
 
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
+        if (mSensor == OrbSlam3::IMU_MONOCULAR || mSensor == OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         {
             Sophus::SE3f Twb = (pKF->mImuCalib.mTbc * (*lit) * Trw).inverse();
             Eigen::Quaternionf q = Twb.unit_quaternion();
@@ -775,7 +775,7 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
     Sophus::SE3f Twb; // Can be word to cam0 or world to b dependingo on IMU or not.
-    if (mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD)
+    if (mSensor==OrbSlam3::IMU_MONOCULAR || mSensor==OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         Twb = vpKFs[0]->GetImuPose();
     else
         Twb = vpKFs[0]->GetPoseInverse();
@@ -840,7 +840,7 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
 
         // cout << "4" << endl;
 
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
+        if (mSensor == OrbSlam3::IMU_MONOCULAR || mSensor == OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         {
             Sophus::SE3f Twb = (pKF->mImuCalib.mTbc * (*lit) * Trw).inverse();
             Eigen::Quaternionf q = Twb.unit_quaternion();
@@ -890,7 +890,7 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
     Sophus::SE3f Twb; // Can be word to cam0 or world to b dependingo on IMU or not.
-    if (mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD)
+    if (mSensor==IMU_MONOCULAR || mSensor==OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         Twb = vpKFs[0]->GetImuPose_();
     else
         Twb = vpKFs[0]->GetPoseInverse_();
@@ -956,7 +956,7 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
         // cout << "4" << endl;
 
 
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
+        if (mSensor == OrbSlam3::IMU_MONOCULAR || mSensor == OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         {
             Sophus::SE3f Tbw = pKF->mImuCalib.Tbc_ * (*lit) * Trw;
             Sophus::SE3f Twb = Tbw.inverse();
@@ -1016,7 +1016,7 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
 
         if(pKF->isBad())
             continue;
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
+        if (mSensor == OrbSlam3::IMU_MONOCULAR || mSensor == OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         {
             cv::Mat R = pKF->GetImuRotation().t();
             vector<float> q = Converter::toQuaternion(R);
@@ -1074,7 +1074,7 @@ void System::SaveKeyFrameTrajectoryEuRoC(const string &filename)
 
         if(!pKF || pKF->isBad())
             continue;
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
+        if (mSensor == OrbSlam3::IMU_MONOCULAR || mSensor == OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         {
             Sophus::SE3f Twb = pKF->GetImuPose();
             Eigen::Quaternionf q = Twb.unit_quaternion();
@@ -1112,7 +1112,7 @@ void System::SaveKeyFrameTrajectoryEuRoC(const string &filename, Map* pMap)
 
         if(!pKF || pKF->isBad())
             continue;
-        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
+        if (mSensor == OrbSlam3::IMU_MONOCULAR || mSensor == OrbSlam3::IMU_STEREO || mSensor==OrbSlam3::IMU_RGBD)
         {
             Sophus::SE3f Twb = pKF->GetImuPose();
             Eigen::Quaternionf q = Twb.unit_quaternion();
@@ -1187,7 +1187,7 @@ void System::SaveKeyFrameTrajectoryEuRoC(const string &filename, Map* pMap)
 void System::SaveTrajectoryKITTI(const string &filename)
 {
     cout << endl << "Saving camera trajectory to " << filename << " ..." << endl;
-    if(mSensor==MONOCULAR)
+    if(mSensor==OrbSlam3::MONOCULAR)
     {
         cerr << "ERROR: SaveTrajectoryKITTI cannot be used for monocular." << endl;
         return;

@@ -2,11 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(ORB_SLAM3)
 
 if (ANDROID_NDK)
-#[[    #needed by DBoW2
-    message("LOOKING FOR BOOST LIBRARY INCLUDES IN " ${BOOST4ANDROID}/${CMAKE_ANDROID_ARCH_ABI}/include/boost-1_82/)
-    include_directories(${BOOST4ANDROID}/${CMAKE_ANDROID_ARCH_ABI}/include/boost-1_82/)]]
-
-# Eventually this is the right way to link to boost, for now let's use hard coded values
+# this is the right way to link to boost
     set(CMAKE_FIND_DEBUG_MODE FALSE)
     set(Boost_DEBUG 0)
     set(CMAKE_SYSROOT_OLD ${CMAKE_SYSROOT})
@@ -101,6 +97,7 @@ if (NOT ANDROID_NDK)
 endif()
 
 add_library(${PROJECT_NAME} SHARED
+src/OrbSlam3.cpp
 src/System.cc
 src/SystemUI.cc
 src/Tracking.cc
@@ -128,6 +125,7 @@ src/GeometricTools.cc
 src/TwoViewReconstruction.cc
 src/Config.cc
 src/Settings.cc
+include/OrbSlam3.h
 include/System.h
 include/SystemUI.h
 include/Tracking.h
