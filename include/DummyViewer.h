@@ -11,7 +11,7 @@ namespace ORB_SLAM3 {
 
     class DummyViewer : public IViewer {
         virtual void RequestStop() {};
-        virtual bool isStopped() {};
+        virtual bool isStopped() { return true; };
         virtual void Release() {};
     };
 

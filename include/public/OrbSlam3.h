@@ -14,10 +14,14 @@ using namespace std;
 namespace ORB_SLAM3 {
 
     class System;
+    class FeaturesDrawer;
 
     class OrbSlam3 {
     private:
+        atomic_bool isInitialised;
+        int lastTrackingState = 0;
         System* _system;
+        FeaturesDrawer* featDrawer;
     public:
         // Input sensor
         enum eSensor{
@@ -29,9 +33,9 @@ namespace ORB_SLAM3 {
             IMU_RGBD=5,
         };
 
-        OrbSlam3(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true, const int initFr = 0, const string &strSequence = std::string());
+        OrbSlam3(const string &rootPath, const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true, const int initFr = 0, const string &strSequence = std::string());
         ~OrbSlam3();
-        void TrackMonocular(void *im, const double &timestamp);
+        void TrackMonocular(float *outMat, void *im, int32_t w, int32_t h, int8_t chan, const double &timestamp);
     };
 }
 #endif //ORB_SLAM3_ORBSLAM3_H

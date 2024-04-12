@@ -78,6 +78,7 @@ namespace ORB_SLAM3 {
 
         bool needToUndistort() {return bNeedToUndistort_;}
 
+        cv::Size oriImSize() {return originalImSize_;}
         cv::Size newImSize() {return newImSize_;}
         float fps() {return fps_;}
         bool rgb() {return bRGB_;}
@@ -112,6 +113,7 @@ namespace ORB_SLAM3 {
         float viewPointF() {return viewPointF_;}
         float imageViewerScale() {return imageViewerScale_;}
 
+        std::string dirRootPath() {return rootPath_;}
         std::string atlasLoadFile() {return sLoadFrom_;}
         std::string atlasSaveFile() {return sSaveto_;}
 
@@ -221,7 +223,7 @@ namespace ORB_SLAM3 {
         /*
          * Save & load maps
          */
-        std::string sLoadFrom_, sSaveto_;
+        std::string rootPath_, sLoadFrom_, sSaveto_;
 
         /*
          * Other stuff

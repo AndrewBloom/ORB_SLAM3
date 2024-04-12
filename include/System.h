@@ -28,7 +28,7 @@
 #include<thread>
 #include<opencv2/core/core.hpp>
 
-#include "OrbSlam3.h"
+#include "include/public/OrbSlam3.h"
 #include "SystemUI.h"
 #include "Tracking.h"
 #include "Atlas.h"
@@ -93,7 +93,7 @@ public:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const string &strSettingsFile, const OrbSlam3::eSensor sensor, const bool bUseViewer = true, const int initFr = 0, const string &strSequence = std::string());
+    System(const string &strVocFile, const string &strSettingsFile, const OrbSlam3::eSensor sensor, const bool bUseViewer = true, const int initFr = 0, const string &strSequence = std::string(), const string &dirRootPath = "./");
 
     // Proccess the given stereo frame. Images must be synchronized and rectified.
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
@@ -176,12 +176,16 @@ public:
     void ChangeDataset();
 
     float GetImageScale();
+    // the ratio between the original image size and the image used for computation
+    cv::Size2f getImageSizeScale();
 
 #ifdef REGISTER_TIMES
     void InsertRectTime(double& time);
     void InsertResizeTime(double& time);
     void InsertTrackTime(double& time);
 #endif
+
+    SystemUI* sysUI;
 
 private:
 
@@ -215,8 +219,6 @@ private:
     // a pose graph optimization and full bundle adjustment (in a new thread) afterwards.
     LoopClosing* mpLoopCloser;
 
-    SystemUI* sysUI;
-
     // System threads: Local Mapping, Loop Closing.
     // The Tracking thread "lives" in the main execution thread that creates the System object.
     std::thread* mptLocalMapping;
@@ -242,6 +244,7 @@ private:
     std::mutex mMutexState;
 
     //
+    string mDirRootPath;
     string mStrLoadAtlasFromFile;
     string mStrSaveAtlasToFile;
 

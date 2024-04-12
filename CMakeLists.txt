@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.8)
-project(ORB_SLAM3)
+project(OrbSlam3)
 
 if (ANDROID_NDK)
+    set(CMAKE_FIND_ROOT_PATH "${CMAKE_FIND_ROOT_PATH};/")
 # this is the right way to link to boost
     set(CMAKE_FIND_DEBUG_MODE FALSE)
     set(Boost_DEBUG 0)
-    set(CMAKE_SYSROOT_OLD ${CMAKE_SYSROOT})
-    set(CMAKE_SYSROOT "")
     set(BOOST_ROOT ${BOOST_PATH}/${CMAKE_ANDROID_ARCH_ABI})
     message("LOOKING FOR BOOST ROOT IN " ${BOOST_ROOT})
     set(BOOST_INCLUDEDIR ${BOOST_PATH}/${CMAKE_ANDROID_ARCH_ABI}/include/boost-1_82)
@@ -27,39 +26,9 @@ if (ANDROID_NDK)
     else()
         message(FATAL_ERROR "Boost_FOUND is False")
     endif()
-    set(CMAKE_SYSROOT ${CMAKE_SYSROOT_OLD})
 endif()
 
-add_subdirectory(Thirdparty/DBoW2 Thirdparty/DBoW2/build)
-add_subdirectory(Thirdparty/g2o Thirdparty/g2o/build)
-add_subdirectory(Thirdparty/Sophus Thirdparty/Sophus/build)
 
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE Release)
-ENDIF()
-
-MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall   -O3")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=native")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
-
-# Check C++11 or C++0x support
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if(COMPILER_SUPPORTS_CXX14)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-   add_definitions(-DCOMPILEDWITHC14)
-   message(STATUS "Using flag -std=c++14.")
-elseif(COMPILER_SUPPORTS_CXX11)
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-   add_definitions(-DCOMPILEDWITHC11)
-   message(STATUS "Using flag -std=c++11.")
-else()
-   message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
-endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
@@ -71,10 +40,17 @@ find_package(OpenCV 4)
 MESSAGE("OPENCV VERSION:")
 MESSAGE(${OpenCV_VERSION})
 
-find_package(Eigen3 3.1.0 REQUIRED)
-if (NOT ANDROID_NDK)
+if (ANDROID_NDK)
+find_package(Eigen3 3.1.0 REQUIRED PATHS ${Eigen3_BINARY_DIR})
+if(Eigen3_FOUND)
+    message("Eigen3_FOUND is True")
+    message("${CMAKE_SOURCE_DIR}/eigen")
+    include_directories("${CMAKE_SOURCE_DIR}/eigen")
+endif(Eigen3_FOUND)
+else(ANDROID_NDK)
+    find_package(Eigen3 3.1.0 REQUIRED)
     find_package(Pangolin REQUIRED)
-endif()
+endif(ANDROID_NDK)
 find_package(realsense2)
 
 include_directories(
@@ -90,6 +66,42 @@ if (ANDROID_NDK)
     include_directories( ${OPENSSL_INCLUDE_DIR} )
 endif()
 
+add_subdirectory(Thirdparty/DBoW2 Thirdparty/DBoW2/build)
+add_subdirectory(Thirdparty/g2o Thirdparty/g2o/build)
+add_subdirectory(Thirdparty/Sophus Thirdparty/Sophus/build)
+
+IF(NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE Release)
+ENDIF()
+
+MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall   -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -march=native")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native")
+
+# Check C++11 or C++0x support
+if (NOT ANDROID_NDK)
+    include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX14)
+    CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+    if (COMPILER_SUPPORTS_CXX14)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+        add_definitions(-DCOMPILEDWITHC14)
+        message(STATUS "Using flag -std=c++14.")
+    elseif (COMPILER_SUPPORTS_CXX11)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        add_definitions(-DCOMPILEDWITHC11)
+        message(STATUS "Using flag -std=c++11.")
+    else ()
+        message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
+    endif ()
+else (NOT ANDROID_NDK)
+    # android should use c++17 flag from gradle
+    add_definitions(-DCOMPILEDWITHC14)
+endif (NOT ANDROID_NDK)
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 if (NOT ANDROID_NDK)
@@ -98,6 +110,7 @@ endif()
 
 add_library(${PROJECT_NAME} SHARED
 src/OrbSlam3.cpp
+src/FeaturesDrawer.cpp
 src/System.cc
 src/SystemUI.cc
 src/Tracking.cc
@@ -125,7 +138,7 @@ src/GeometricTools.cc
 src/TwoViewReconstruction.cc
 src/Config.cc
 src/Settings.cc
-include/OrbSlam3.h
+        include/public/OrbSlam3.h
 include/System.h
 include/SystemUI.h
 include/Tracking.h
@@ -183,12 +196,9 @@ if (ANDROID_NDK)
 
     target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
-    set(CMAKE_SYSROOT_OLD ${CMAKE_SYSROOT})
-    set(CMAKE_SYSROOT "")
     message("LOOKING FOR OPEN_SSL LIBRARY IN " ${OPENSSL_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI})
     find_library(lib_crypto NAMES crypto
             HINTS ${OPENSSL_LIB_DIR}/${CMAKE_ANDROID_ARCH_ABI})
-    set(CMAKE_SYSROOT ${CMAKE_SYSROOT_OLD})
     set(lib_dbow2 DBoW2)
 else()
     set(lib_boost_serialisation
@@ -203,7 +213,7 @@ ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
 ${lib_dbow2}
-${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+${g2o_LIBRARY_OUTPUT_DIRECTORY}/libg2o.so
 ${lib_boost_serialisation}
 ${lib_crypto}
 )

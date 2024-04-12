@@ -472,6 +472,7 @@ namespace ORB_SLAM3 {
     void Settings::readLoadAndSave(cv::FileStorage &fSettings) {
         bool found;
 
+        rootPath_ = readParameter<string>(fSettings,"System.DirectoryRootPath",found,false);
         sLoadFrom_ = readParameter<string>(fSettings,"System.LoadAtlasFromFile",found,false);
         sSaveto_ = readParameter<string>(fSettings,"System.SaveAtlasToFile",found,false);
     }

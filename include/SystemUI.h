@@ -29,14 +29,18 @@ namespace ORB_SLAM3 {
         DummyViewer *mpViewer;
         DummyFrameDrawer *mpFrameDrawer;
         DummyMapDrawer *mpMapDrawer;
+        Tracking* tracker;
+        Atlas* atlas;
 #endif
 
         std::thread *mptViewer;
     public:
-        SystemUI(Atlas *mpAtlas, const string &strSettingsFile, Settings *settings_);
+        SystemUI(Atlas *pAtlas, const string &strSettingsFile, Settings *settings_);
         IFrameDrawer* getFrameDrawer();
         IMapDrawer* getMapDrawer();
-        void startUIThread(Tracking *mpTracker, const string &strSettingsFile, Settings *settings_);
+        Tracking* getTracker();
+        Atlas* getAtlas();
+        void startUIThread(Tracking *pTracker, const string &strSettingsFile, Settings *settings_);
     };
 }
 #endif //ORB_SLAM3_SYSTEMUI_H
